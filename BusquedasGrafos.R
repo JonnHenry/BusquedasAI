@@ -60,16 +60,17 @@ grafoGene <- setRefClass("Grafo", fields = list(
       #inicializa el grafo
       heuristicaList<<-list()
       dataFrameGrafo <- read.csv(nombreArchivo, sep = ",", header = TRUE, stringsAsFactors = FALSE)
-      dataFrameGrafo<-dataFrameGrafo[order(dataFrameGrafo$nodoInicio,dataFrameGrafo$nodoFin,na.last = TRUE,decreasing = ordDescendente),]
+      dataPrueba <- dataFrameGrafo[order(as.character(dataFrameGrafo[[1]]),as.character(dataFrameGrafo[[2]]),na.last = TRUE,decreasing = ordDescendente),]
       
-      for (j in 1:length(dataFrameGrafo[[1]])) {
-        heuristicaList[[as.character(dataFrameGrafo[[1]][[j]])]]<<-dataFrameGrafo[[4]][[j]]
+      for (j in 1:length(dataPrueba[[1]])) {
+        heuristicaList[[as.character(dataPrueba[[1]][[j]])]]<<-dataPrueba[[4]][[j]]
       }
       
       dataFrameGrafo<-dataFrameGrafo[dataFrameGrafo[[2]]!="",]
+      dataPrueba<-dataPrueba[dataPrueba[[2]]!="",]
       
-      for (k in 1:length(dataFrameGrafo[[1]])) {
-        agregarArista(as.character(dataFrameGrafo[[1]][[k]]), as.character(dataFrameGrafo[[2]][[k]]), dataFrameGrafo[[3]][[k]],heuristicaList[[as.character(dataFrameGrafo[[2]][[k]])]])
+      for (k in 1:length(dataPrueba[[1]])) {
+        agregarArista(as.character(dataPrueba[[1]][[k]]), as.character(dataPrueba[[2]][[k]]), dataPrueba[[3]][[k]],heuristicaList[[as.character(dataPrueba[[2]][[k]])]])
       }
       
       return(graph_from_data_frame(dataFrameGrafo, directed = TRUE))
@@ -525,11 +526,6 @@ grafoGene <- setRefClass("Grafo", fields = list(
         cat("\n ")
         
         if (is.null(cola$look()) | length(listNodosBuscar) == 0) {
-          if(length(listNodosBuscar)!=0){
-            cat("\n ")
-            cat("No se ha encontrado todos los nodos!")
-            cat("\n ")
-          }
           break
         }
         
@@ -566,6 +562,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
       if (length(listNodosBuscar) != 0 & !is.null(listNodosBuscar)) {
         if (listNodosBuscar[[1]]!=""){
           cat("\n ")
+          print("Paso")
           cat("No se ha encontrado todos los nodos")
         }
         
@@ -654,6 +651,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("No se ha encontrado todos los nodos")
         }
         
+        
       }
     }
   )
@@ -662,4 +660,4 @@ grafoGene <- setRefClass("Grafo", fields = list(
 grafo <- grafoGene(nombreArchivo = "prueba.csv")
 datosIgraph<-grafo$initGrafo(FALSE)
 V(datosIgraph)$color <- "yellow"
-grafo$aEstrella("A",list(),datosIgraph)
+grafo$busquedaProfundidadIterativa("A",list(),2,datosIgraph)
