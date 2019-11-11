@@ -72,7 +72,6 @@ grafoGene <- setRefClass("Grafo", fields = list(
       for (k in 1:length(dataAux[[1]])) {
         agregarArista(as.character(dataAux[[1]][[k]]), as.character(dataAux[[2]][[k]]), dataAux[[3]][[k]],heuristicaList[[as.character(dataAux[[2]][[k]])]])
       }
-      
       return(graph_from_data_frame(dataFrameGrafo, directed = TRUE))
     },
     
