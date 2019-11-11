@@ -60,17 +60,17 @@ grafoGene <- setRefClass("Grafo", fields = list(
       #inicializa el grafo
       heuristicaList<<-list()
       dataFrameGrafo <- read.csv(nombreArchivo, sep = ",", header = TRUE, stringsAsFactors = FALSE)
-      dataPrueba <- dataFrameGrafo[order(as.character(dataFrameGrafo[[1]]),as.character(dataFrameGrafo[[2]]),na.last = TRUE,decreasing = ordDescendente),]
+      dataAux <- dataFrameGrafo[order(as.character(dataFrameGrafo[[1]]),as.character(dataFrameGrafo[[2]]),na.last = TRUE,decreasing = ordDescendente),]
+      #Mando a limpiar los datos que no me sirve, las filas que solo contienen la heuristica del nodo
       
-      for (j in 1:length(dataPrueba[[1]])) {
-        heuristicaList[[as.character(dataPrueba[[1]][[j]])]]<<-dataPrueba[[4]][[j]]
+      for (j in 1:length(dataAux[[1]])) {
+          heuristicaList[[as.character(dataAux[[1]][[j]])]]<<-dataAux[[4]][[j]]
       }
-      
+      dataAux<-dataAux[dataAux[[2]]!="",]
       dataFrameGrafo<-dataFrameGrafo[dataFrameGrafo[[2]]!="",]
-      dataPrueba<-dataPrueba[dataPrueba[[2]]!="",]
       
-      for (k in 1:length(dataPrueba[[1]])) {
-        agregarArista(as.character(dataPrueba[[1]][[k]]), as.character(dataPrueba[[2]][[k]]), dataPrueba[[3]][[k]],heuristicaList[[as.character(dataPrueba[[2]][[k]])]])
+      for (k in 1:length(dataAux[[1]])) {
+        agregarArista(as.character(dataAux[[1]][[k]]), as.character(dataAux[[2]][[k]]), dataAux[[3]][[k]],heuristicaList[[as.character(dataAux[[2]][[k]])]])
       }
       
       return(graph_from_data_frame(dataFrameGrafo, directed = TRUE))
@@ -650,8 +650,6 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("\n ")
           cat("No se ha encontrado todos los nodos")
         }
-        
-        
       }
     }
   )
@@ -660,4 +658,4 @@ grafoGene <- setRefClass("Grafo", fields = list(
 grafo <- grafoGene(nombreArchivo = "prueba.csv")
 datosIgraph<-grafo$initGrafo(FALSE)
 V(datosIgraph)$color <- "yellow"
-grafo$busquedaProfundidadIterativa("A",list(),2,datosIgraph)
+grafo$aEstrella("A",list(),datosIgraph)
