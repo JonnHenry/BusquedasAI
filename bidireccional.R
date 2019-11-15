@@ -54,18 +54,20 @@ grafoBidiGene <- setRefClass("GrafoBidireccional", fields = list(
       return(listNodos[[id]])
     },
     #Inicializa el grafo el parametro indica el orden si es FALSE entoces es ascendente 1,2,3 ...5 si es TRUE es descente 5,4,3,...1
-    initGrafo = function(decresiente) {
+    initGrafo = function(ordDescendente,cabecerasEnArchivo,dirigido) {
       #inicializa el grafo
-      dataFrameGrafo <- read.csv(nombreArchivo, sep = ",", header = TRUE, stringsAsFactors = FALSE)
-      dataFrameGrafo<-dataFrameGrafo[order(dataFrameGrafo$nodoInicio,dataFrameGrafo$nodoFin,na.last = TRUE,decreasing = decresiente),]
-      
+      dataFrameGrafo <- read.csv(nombreArchivo, sep = ",", header = cabecerasEnArchivo, stringsAsFactors = FALSE)
+      dataAux <- dataFrameGrafo[order(as.character(dataFrameGrafo[[1]]),as.character(dataFrameGrafo[[2]]),na.last = TRUE,decreasing = ordDescendente),]
+    
+      dataAux<-dataAux[dataAux[[2]]!="",]
       dataFrameGrafo<-dataFrameGrafo[dataFrameGrafo[[2]]!="",]
       
-      for (k in 1:length(dataFrameGrafo[[1]])) {
-        agregarArista(as.character(dataFrameGrafo[[1]][[k]]), as.character(dataFrameGrafo[[2]][[k]]), dataFrameGrafo[[3]][[k]])
-      }
+      for (k in 1:length(dataAux[[1]])) {
+        agregarArista(as.character(dataAux[[1]][[k]]), as.character(dataAux[[2]][[k]]), dataAux[[3]][[k]])
+        agregarArista(as.character(dataAux[[2]][[k]]), as.character(dataAux[[1]][[k]]), dataAux[[3]][[k]])
       
-      return(graph_from_data_frame(dataFrameGrafo, directed = FALSE))
+      }
+      return(graph_from_data_frame(dataFrameGrafo, directed = dirigido))
     },
     
     getNombreNodos = function() {
@@ -163,7 +165,6 @@ grafoBidiGene <- setRefClass("GrafoBidireccional", fields = list(
                 nodosObj[[nodo]]<-NULL
               }
               
-              
               dataIgraph<-grafica(nodo,dataIgraph,TRUE)
               dataIgraph<-grafica(nodoInicio,dataIgraph,TRUE)
               finalizarBusqdNodo<-TRUE
@@ -210,7 +211,7 @@ grafoBidiGene <- setRefClass("GrafoBidireccional", fields = list(
   )
 )
 
-grafo <- grafoBidiGene(nombreArchivo = "pruebaRepetidos.csv")
-datosIgraph<-grafo$initGrafo(FALSE)
+grafo <- grafoBidiGene(nombreArchivo = "grafo1.csv")
+datosIgraph<-grafo$initGrafo(FALSE,FALSE,FALSE)
 V(datosIgraph)$color <- "yellow"
-grafo$busquedaBidiriccional("0",list("1","2","3"),TRUE,datosIgraph)
+grafo$busquedaBidiriccional("z",list("s","h","e"),TRUE,datosIgraph)
