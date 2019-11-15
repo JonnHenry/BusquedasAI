@@ -56,10 +56,11 @@ grafoGene <- setRefClass("Grafo", fields = list(
       return(listNodos[[id]])
     },
     #Inicializa el grafo el parametro indica el orden si es FALSE entoces es ascendente 1,2,3 ...5 si es TRUE es descente 5,4,3,...1
-    initGrafo = function(ordDescendente) {
+    #Este parametro me sirve para ver si el archivo tiene cabeceras puede ser TRUE o FALSE
+    initGrafo = function(ordDescendente,cabecerasEnArchivo) {
       #inicializa el grafo
       heuristicaList<<-list()
-      dataFrameGrafo <- read.csv(nombreArchivo, sep = ",", header = TRUE, stringsAsFactors = FALSE)
+      dataFrameGrafo <- read.csv(nombreArchivo, sep = ",", header = cabecerasEnArchivo, stringsAsFactors = FALSE)
       dataAux <- dataFrameGrafo[order(as.character(dataFrameGrafo[[1]]),as.character(dataFrameGrafo[[2]]),na.last = TRUE,decreasing = ordDescendente),]
       #Mando a limpiar los datos que no me sirve, las filas que solo contienen la heuristica del nodo
       
@@ -250,6 +251,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
       nivelBusqd[[nodoInicio]]<-list(id=nodoInicio, nivel=0)
       pila$push(listNodos[[nodoInicio]]$id)
       while (TRUE) {
+        
         if (!is.null(listNodosBuscar[[extracciones]])) {
           valor <- listNodosBuscar[[extracciones]]
           listNodosBuscar[[extracciones]] <- NULL
@@ -272,32 +274,35 @@ grafoGene <- setRefClass("Grafo", fields = list(
         cat("********************************************************************")
         cat("\n ")
         
+        
+        
         if (is.null(pila$look()) | length(listNodosBuscar) == 0) {
           break
         }
         
         
         extracciones <- pila$pop()
-        dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
-        if(nivelBusqd[[extracciones]]$nivel< nivelBusqueda){
-          
-          while(!is.null(listNodosVisitados[[extracciones]])){
-            cat("\n ")
-            cat(paste("<El nodo", extracciones, "ya ha sido visitado, no se visitara!>", sep = " "))
-            cat("\n ")
-            cat("La pila actual es: ", pila$look())
-            cat("\n ")
-            extracciones <- pila$pop()
-            dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
-            if (is.null(extracciones)) {
-              break
-            }
-          }
-          
+        
+        while(!is.null(listNodosVisitados[[extracciones]])){
+          cat("\n ")
+          cat(paste("<El nodo", extracciones, "ya ha sido visitado, no se visitara!>", sep = " "))
+          cat("\n ")
+          cat("La pila actual es: ", pila$look())
+          cat("\n ")
+          extracciones <- pila$pop()
+          dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
           if (is.null(extracciones)) {
             break
           }
-          
+        }
+        
+        if (is.null(extracciones)) {
+          break
+        }
+        
+        
+        dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+        if(nivelBusqd[[extracciones]]$nivel< nivelBusqueda){
           nodosAdyacentes <- getNodoAristas(extracciones)$adyacentes
           for (nodo in nodosAdyacentes) {
             pila$push(nodo$id)
@@ -308,6 +313,8 @@ grafoGene <- setRefClass("Grafo", fields = list(
           nivel<-nivel+1
         }
       }
+      
+      
       if (length(listNodosBuscar) != 0 & !is.null(listNodosBuscar)) {
         if (listNodosBuscar[[1]]!=""){
           cat("\n ")
@@ -654,7 +661,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
   )
 )
 
-grafo <- grafoGene(nombreArchivo = "prueba.csv")
-datosIgraph<-grafo$initGrafo(FALSE)
+grafo <- grafoGene(nombreArchivo = "grafo1.csv")
+datosIgraph<-grafo$initGrafo(FALSE,FALSE)
 V(datosIgraph)$color <- "yellow"
-grafo$aEstrella("A",list(),datosIgraph)
+grafo$busquedaProfundidadIterativa("s",list(),4,datosIgraph)
