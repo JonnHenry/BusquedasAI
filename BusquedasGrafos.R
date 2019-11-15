@@ -132,7 +132,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           break
         }
         extracciones <- cola$pop()
-        dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+        
         
         while(!is.null(listNodosVisitados[[extracciones]])){
           cat("\n ")
@@ -141,15 +141,20 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("La cola actual es: ", cola$look())
           cat("\n ")
           extracciones <- cola$pop()
-          dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
           if (is.null(extracciones)) {
             break
           }
+          if (is.null(listNodosVisitados[[extracciones]])){
+            dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+          }
+          
+          
         }
         
         if (is.null(extracciones)) {
           break
         }
+        dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
         nodosAdyacentes <- getNodoAristas(extracciones)$adyacentes
         for (nodo in nodosAdyacentes) {
           cola$push(nodo$id)
@@ -202,7 +207,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           break
         }
         extracciones <- pila$pop()
-        dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+        
         
         while(!is.null(listNodosVisitados[[extracciones]])){
           cat("\n ")
@@ -211,15 +216,20 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("La pila actual es: ", pila$look())
           cat("\n ")
           extracciones <- pila$pop()
-          dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
           if (is.null(extracciones)) {
             break
           }
+          if (is.null(listNodosVisitados[[extracciones]])){
+            dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+          }
+          
         }
         
         if (is.null(extracciones)) {
           break
         }
+        
+        dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
         nodosAdyacentes <- getNodoAristas(extracciones)$adyacentes
         for (nodo in nodosAdyacentes) {
           pila$push(nodo$id)
@@ -274,15 +284,12 @@ grafoGene <- setRefClass("Grafo", fields = list(
         cat("********************************************************************")
         cat("\n ")
         
-        
-        
         if (is.null(pila$look()) | length(listNodosBuscar) == 0) {
           break
         }
         
-        
         extracciones <- pila$pop()
-        
+        #Es para poder obviar los que ya estan repetidos y no extraer de nuevo
         while(!is.null(listNodosVisitados[[extracciones]])){
           cat("\n ")
           cat(paste("<El nodo", extracciones, "ya ha sido visitado, no se visitara!>", sep = " "))
@@ -290,12 +297,16 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("La pila actual es: ", pila$look())
           cat("\n ")
           extracciones <- pila$pop()
-          dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
           if (is.null(extracciones)) {
             break
           }
+          if (is.null(listNodosVisitados[[extracciones]])){
+            dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+          }
+          
         }
         
+        #Puede darse el caso de que la cola este vacia
         if (is.null(extracciones)) {
           break
         }
@@ -369,7 +380,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
         }
         
         extracciones <- cola$pop()
-        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+        
         
         while(!is.null(listNodosVisitados[[extracciones$nodo]])){
           cat(paste("<El nodo", extracciones$nodo, "ya ha sido visitado, no se visitara!>", sep = " "))
@@ -379,15 +390,19 @@ grafoGene <- setRefClass("Grafo", fields = list(
           print(cola$look(),row.names = FALSE)
           extracciones <- cola$pop()
           cat("\n ")
-          dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
           if (is.null(extracciones)) {
             break
           }
+          if (is.null(listNodosVisitados[[extracciones$nodo]])){
+            dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+          }
+          
         }
         
         if (is.null(extracciones)) {
           break
         }
+        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
         
         nodosAdyacentes <- getNodoAristas(extracciones$nodo)$adyacentes
         numExtracciones<-as.numeric(extracciones$peso)
@@ -452,7 +467,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
         }
         
         extracciones <- cola$pop()
-        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+        
         cola$clean()
         
         while(!is.null(listNodosVisitados[[extracciones$nodo]])){
@@ -463,15 +478,19 @@ grafoGene <- setRefClass("Grafo", fields = list(
           print(cola$look(),row.names = FALSE)
           extracciones <- cola$pop()
           cat("\n ")
-          dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
           if (is.null(extracciones)) {
             break
           }
+          if (is.null(listNodosVisitados[[extracciones$nodo]])){
+            dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+          }
+          
         }
         
         if (is.null(extracciones)) {
           break
         }
+        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
         
         nodosAdyacentes <- getNodoAristas(extracciones$nodo)$adyacentes
         
@@ -536,7 +555,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
         }
         
         extracciones <- cola$pop()
-        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+       
         
         while(!is.null(listNodosVisitados[[extracciones$nodo]])){
           cat(paste("<El nodo", extracciones$nodo, "ya ha sido visitado, no se visitara!>", sep = " "))
@@ -546,15 +565,19 @@ grafoGene <- setRefClass("Grafo", fields = list(
           print(cola$look(),row.names = FALSE)
           cat("\n ")
           extracciones <- cola$pop()
-          dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
           if (is.null(extracciones)) {
             break
           }
+          if (is.null(listNodosVisitados[[extracciones$nodo]])){
+            dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+          }
+          
         }
         
         if (is.null(extracciones)) {
           break
         }
+        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
         
         nodosAdyacentes <- getNodoAristas(extracciones$nodo)$adyacentes
         
@@ -619,7 +642,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
         }
         
         extracciones <- cola$pop()
-        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+        
           while(!is.null(listNodosVisitados[[extracciones$nodo]])){
             cat(paste("<El nodo", extracciones$nodo, "ya ha sido visitado, no se visitara!>", sep = " "))
             cat("\n ")
@@ -628,18 +651,24 @@ grafoGene <- setRefClass("Grafo", fields = list(
             print(cola$look(),row.names = FALSE)
             extracciones <- cola$pop()
             cat("\n ")
-            dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
             if (is.null(extracciones)) {
               break
             }
+            if (is.null(listNodosVisitados[[extracciones$nodo]])){
+              dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+            }
           }
+        
           
         if (is.null(extracciones)) {
           break
         }
         
+          dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+        
+        
         nodosAdyacentes <- getNodoAristas(extracciones$nodo)$adyacentes
-        #print(nodosAdyacentes)
+        
         
         for (nodo in nodosAdyacentes) {
           numHeuristica<-as.numeric(nodo$heuristica)
@@ -647,6 +676,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cola$push(c(nodo$id,numPeso,numHeuristica,(numHeuristica+numPeso)))
         }
         cola$sort("suma")
+        
         listNodosVisitados[[extracciones$nodo]] <<- "1"
         
         
@@ -664,4 +694,4 @@ grafoGene <- setRefClass("Grafo", fields = list(
 grafo <- grafoGene(nombreArchivo = "grafo1.csv")
 datosIgraph<-grafo$initGrafo(FALSE,FALSE)
 V(datosIgraph)$color <- "yellow"
-grafo$busquedaProfundidadIterativa("s",list(),4,datosIgraph)
+grafo$primeroMejor("s",list("z","a"),datosIgraph)
