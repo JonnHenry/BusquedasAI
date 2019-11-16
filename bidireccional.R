@@ -13,7 +13,7 @@ ifelse(require(structOfSearch) == T, "Cargado", "structOfSearch no cargado acced
 
 #####################################################
 
-grafica = function(vertice,data,nodoFinal){
+graficaBidi = function(vertice,data,nodoFinal,pausas){
   if(nodoFinal){
     V(data)[vertice]$color <- "blue"
   }else{
@@ -21,16 +21,17 @@ grafica = function(vertice,data,nodoFinal){
   }
   plot(data,layout=layout.reingold.tilford(data, root=1), edge.arrow.size=0.5,vertex.color=V(data)$color)
   legend(x = "topright",cex=0.7,bty = "n" ,pt.cex=1,legend = c("Nodo intermedio","Nodo objetivo"), fill = c("yellow","blue"), title = "Estados de un nodo")
-  Sys.sleep(1)
+  if (pausas){
+    Sys.sleep(1)
+  }
   return(data)
 }
 
-nodoGene <- setRefClass("Nodo", fields = list(
+nodoGeneBidi <- setRefClass("NodoBidi", fields = list(
   adyacentes = "list",
-  id = "character",
-  heuristica="numeric"),
+  id = "character"),
   methods = list(
-    agregarAdyacente = function(nodoAdyacente, peso) {
+    agregaAdyacente = function(nodoAdyacente, peso) {
       adyacentes[[nodoAdyacente]] <<- list(id = nodoAdyacente, peso = peso)
     }
   )
@@ -38,14 +39,14 @@ nodoGene <- setRefClass("Nodo", fields = list(
 
 
 #Construcción de un grafo bidireccional para realizar la busqueda
-grafoBidiGene <- setRefClass("GrafoBidireccional", fields = list(
+grafoGeneBidi <- setRefClass("GrafoBidireccional", fields = list(
   listNodos = "list",
   nombreArchivo = "character",
   listNombreNodos = "list"),
   methods = list(
     agregarNodo = function(id) {
       if (is.null(listNombreNodos[[id]])) {
-        nodoNuevo <- nodoGene(id = id)
+        nodoNuevo <- nodoGeneBidi(id = id)
         listNombreNodos[[id]] <<- id
         listNodos[[id]] <<- nodoNuevo
       }
@@ -54,7 +55,7 @@ grafoBidiGene <- setRefClass("GrafoBidireccional", fields = list(
       return(listNodos[[id]])
     },
     #Inicializa el grafo el parametro indica el orden si es FALSE entoces es ascendente 1,2,3 ...5 si es TRUE es descente 5,4,3,...1
-    initGrafo = function(ordDescendente,cabecerasEnArchivo,dirigido) {
+    initGrafo = function(ordDescendente,cabecerasEnArchivo) {
       #inicializa el grafo
       dataFrameGrafo <- read.csv(nombreArchivo, sep = ",", header = cabecerasEnArchivo, stringsAsFactors = FALSE)
       dataAux <- dataFrameGrafo[order(as.character(dataFrameGrafo[[1]]),as.character(dataFrameGrafo[[2]]),na.last = TRUE,decreasing = ordDescendente),]
@@ -67,7 +68,7 @@ grafoBidiGene <- setRefClass("GrafoBidireccional", fields = list(
         agregarArista(as.character(dataAux[[2]][[k]]), as.character(dataAux[[1]][[k]]), dataAux[[3]][[k]])
       
       }
-      return(graph_from_data_frame(dataFrameGrafo, directed = dirigido))
+      return(graph_from_data_frame(dataFrameGrafo, directed = FALSE))
     },
     
     getNombreNodos = function() {
@@ -79,20 +80,24 @@ grafoBidiGene <- setRefClass("GrafoBidireccional", fields = list(
       
       agregarNodo(inicio)
       agregarNodo(fin)
-      listNodos[[inicio]]$agregarAdyacente(fin, peso)
+      listNodos[[inicio]]$agregaAdyacente(fin, peso)
       #Con la agregación de esta linea me ayuda a que los grafos esten doblemente conectado
       #y no sean grafos dirigidos
-      listNodos[[fin]]$agregarAdyacente(inicio, peso)
+      listNodos[[fin]]$agregaAdyacente(inicio, peso)
     },
     
     getNodos = function() {
       return(listNombreNodos)
     },
-    busquedaBidiriccional=function(nodoInicio,nodosObj,cola,dataIgraph){
+    
+    busquedaBidireccional=function(nodoInicio,nodosObj,cola,dataIgraph,pausas){
+      t <- proc.time()
+      maxHijos<-max(degree(dataIgraph,mode="all"))
+      profundidadGrafo <- (max(distances(dataIgraph, nodoInicio))/2)
       if(cola){
-        cat("Se esta usando una cola para realizar la busqueda")
+        cat("******Se esta usando una cola para realizar la busqueda******")
       }else{
-        cat("Se esta usando una pila para realizar la busqueda")
+        cat("******Se esta usando una pila para realizar la busqueda******")
       }
       cat("\n ")
       estructura<-list()
@@ -165,8 +170,8 @@ grafoBidiGene <- setRefClass("GrafoBidireccional", fields = list(
                 nodosObj[[nodo]]<-NULL
               }
               
-              dataIgraph<-grafica(nodo,dataIgraph,TRUE)
-              dataIgraph<-grafica(nodoInicio,dataIgraph,TRUE)
+              dataIgraph<-graficaBidi(nodo,dataIgraph,TRUE,pausas)
+              dataIgraph<-graficaBidi(nodoInicio,dataIgraph,TRUE,pausas)
               finalizarBusqdNodo<-TRUE
               next
             }
@@ -206,12 +211,16 @@ grafoBidiGene <- setRefClass("GrafoBidireccional", fields = list(
           }
           cont<-cont+1
         }
+        
+        tiempo<-proc.time() - t
+        complejidad=as.character(round(maxHijos^profundidadGrafo,2))
+        return(data.frame("Algoritmo"=c("Bidireccional"),"Temporal"=c(complejidad),"Espacial"=c(complejidad),"Tiempo computacional"=c(tiempo[["elapsed"]]),"Tipo"=c("Ciegas")))
       }
     }
   )
 )
 
-grafo <- grafoBidiGene(nombreArchivo = "grafo1.csv")
-datosIgraph<-grafo$initGrafo(FALSE,FALSE,FALSE)
-V(datosIgraph)$color <- "yellow"
-grafo$busquedaBidiriccional("z",list("s","h","e"),TRUE,datosIgraph)
+# grafo <- grafoGeneBidi(nombreArchivo = "grafo1.csv")
+# datosIgraph<-grafo$initGrafo(FALSE,FALSE)
+# V(datosIgraph)$color <- "yellow"
+# print(grafo$busquedaBidireccional("z",list("s","h","e"),TRUE,datosIgraph,TRUE))

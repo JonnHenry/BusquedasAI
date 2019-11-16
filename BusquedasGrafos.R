@@ -10,18 +10,34 @@ library(igraph)
 ifelse(require(igraph) == T, "Cargado", "igraph no cargado")
 ifelse(require(structOfSearch) == T, "Cargado", "structOfSearch no cargado acceder al siguiente enlace para descargar https://github.com/JonnHenry/StructOfSearch.git")
 
-
 #####################################################
+#Para el calculo de la profundidad de todos los nodos a buscar
+profudidadMeta=function(dataframeIgraph,nodosBuscar,nodoInicial){
+  if (length(nodosBuscar)==0){
+    nodosBuscar<-nodoInicial
+  }
+  distancias <- distances(dataframeIgraph, nodoInicial)
+  costo<-0
+  for (nodo  in nodosBuscar){
+    costo<-costo+distancias[, nodo]
+  }
+  return(round(costo/length(nodosBuscar)))
+}
 
-grafica = function(vertice,data,nodoFinal){
+#Para poder graficar cada ves lo que se esta haciendo con el grafo
+#El parametro pausas es para que se detenga en instantes o todo de una si es TRUE se ve deteniendo poco a poco 
+#Si es falso el mismo no se detiens y va de corrido
+grafica = function(vertice,data,nodoFinal,pausas){
   if(nodoFinal){
     V(data)[vertice]$color <- "blue"
   }else{
     V(data)[vertice]$color <- "red"
   }
-  plot(data,layout=layout.reingold.tilford(data, root=1), edge.arrow.size=0.5,vertex.color=V(data)$color)
+  plot(data,layout=layout.reingold.tilford(data, root=1), edge.arrow.size=0.6,vertex.color=V(data)$color)
   legend(x = "topright",cex=0.7,bty = "n" ,pt.cex=1,legend = c("No visitado", "Visitado","Encontrado"), fill = c("yellow", "red","blue"), title = "Estados de un nodo")
-  Sys.sleep(1)
+  if (pausas){
+    Sys.sleep(2)
+  }
   return(data)
 }
 
@@ -85,7 +101,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
       
       agregarNodo(inicio)
       agregarNodo(fin)
-      listNodos[[inicio]]$agregarAdyacente(fin, peso,heuristica)
+      listNodos[[inicio]]$agregarAdyacente(fin,peso,heuristica)
       #Con la agregación de esta linea me ayuda a que los grafos esten doblemente conectado
       #y no sean grafos dirigidos
       #listNodos[[fin]]$agregarAdyacente(listNodos[[inicio]], peso)
@@ -96,10 +112,14 @@ grafoGene <- setRefClass("Grafo", fields = list(
     },
     
     #Algoritmo para la busqueda en amplitud, nodoInicio por donde comienza la busqueda, lista de nodos a buscar, datos de Igraph para el grafico
-    busquedaAmplitud = function(nodoInicio, listNodosBuscar,dataIgraph) {
+    busquedaAmplitud = function(nodoInicio, listNodosBuscar,dataIgraph,pausas) {
+      t <- proc.time()
+      maxHijos<-max(degree(dataIgraph,mode="out"))
+      profundidadGrafo <- max(distances(dataIgraph, nodoInicio))
       if (length(listNodosBuscar)==0){
         listNodosBuscar[[1]]<-""
       }
+      
       listNodosVisitados <<- list()
       #Se ingresa una lista para buscar todos los elementos de la lista dada
       #El nodo inicio es de tipo character
@@ -118,7 +138,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("\n ")
           cat(paste("--->El nodo encontrado es: ", valor, sep = " "))
           cat("\n ")
-          dataIgraph<-grafica(extracciones,dataIgraph,TRUE)
+          dataIgraph<-grafica(extracciones,dataIgraph,TRUE,pausas)
         }
         cat("\n ")
         cat(paste("La extracción es: ", extracciones, sep = " "))
@@ -145,16 +165,14 @@ grafoGene <- setRefClass("Grafo", fields = list(
             break
           }
           if (is.null(listNodosVisitados[[extracciones]])){
-            dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+            dataIgraph<-grafica(extracciones,dataIgraph,FALSE,pausas)
           }
-          
-          
         }
         
         if (is.null(extracciones)) {
           break
         }
-        dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+        dataIgraph<-grafica(extracciones,dataIgraph,FALSE,pausas)
         nodosAdyacentes <- getNodoAristas(extracciones)$adyacentes
         for (nodo in nodosAdyacentes) {
           cola$push(nodo$id)
@@ -164,14 +182,21 @@ grafoGene <- setRefClass("Grafo", fields = list(
       if (length(listNodosBuscar) != 0 & !is.null(listNodosBuscar)) {
         if (listNodosBuscar[[1]]!=""){
           cat("\n ")
-          cat("No se ha encontrado todos los nodos")
+          message("No se ha encontrado todos los nodos en el algoritmo de amplitud")
+          cat("\n ")
         }
-        
       }
+      tiempo<-proc.time() - t
+      complejidad=as.character(maxHijos^profundidadGrafo)
+      resultados<-data.frame("Algoritmo"=c("Amplitud"),"Temporal"=c(complejidad),"Espacial"=c(complejidad),"Tiempo computacional"=c(tiempo[["elapsed"]]),"Tipo"=c("Ciegas"))
+      return(resultados)
     },
     
     #Algoritmo de busqueda en profundidad usando una cola
-    busquedaProfundidad = function(nodoInicio, listNodosBuscar,dataIgraph) {
+    busquedaProfundidad = function(nodoInicio, listNodosBuscar,dataIgraph,pausas) {
+      t <- proc.time()
+      maxHijos<-max(degree(dataIgraph,mode="out"))
+      profundidadGrafo <- max(distances(dataIgraph, nodoInicio))
       if (length(listNodosBuscar)==0){
         listNodosBuscar[[1]]<-""
       }
@@ -193,7 +218,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("\n ")
           cat(paste("--->El nodo encontrado es: ", valor, sep = " "))
           cat("\n ")
-          dataIgraph<-grafica(extracciones,dataIgraph,TRUE)
+          dataIgraph<-grafica(extracciones,dataIgraph,TRUE,pausas)
         }
         cat("\n ")
         cat(paste("La extracción es: ", extracciones, sep = " "))
@@ -220,7 +245,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
             break
           }
           if (is.null(listNodosVisitados[[extracciones]])){
-            dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+            dataIgraph<-grafica(extracciones,dataIgraph,FALSE,pausas)
           }
           
         }
@@ -229,7 +254,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           break
         }
         
-        dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+        dataIgraph<-grafica(extracciones,dataIgraph,FALSE,pausas)
         nodosAdyacentes <- getNodoAristas(extracciones)$adyacentes
         for (nodo in nodosAdyacentes) {
           pila$push(nodo$id)
@@ -239,14 +264,22 @@ grafoGene <- setRefClass("Grafo", fields = list(
       if (length(listNodosBuscar) != 0 & !is.null(listNodosBuscar)) {
         if (listNodosBuscar[[1]]!=""){
           cat("\n ")
-          cat("No se ha encontrado todos los nodos")
+          message("No se ha encontrado todos los nodos en el algoritmo de profundidad")
+          cat("\n ")
         }
         
       }
+      
+      tiempo<-proc.time() - t
+      return(data.frame("Algoritmo"=c("Profundidad"),"Temporal"=c(as.character(maxHijos^profundidadGrafo)),"Espacial"=c(as.character(maxHijos*profundidadGrafo)),"Tiempo computacional"=c(tiempo[["elapsed"]]),"Tipo"=c("Ciegas")))
+      
     },
     
     
-    busquedaProfundidadIterativa = function(nodoInicio, listNodosBuscar, nivelBusqueda,dataIgraph) {
+    busquedaProfundidadIterativa = function(nodoInicio, listNodosBuscar, nivelBusqueda,dataIgraph,pausas) {
+      t <- proc.time()
+      maxHijos<-max(degree(dataIgraph,mode="out"))
+      profundidadGrafo <- max(distances(dataIgraph, nodoInicio))
       if (length(listNodosBuscar)==0){
         listNodosBuscar[[1]]<-""
       }
@@ -272,7 +305,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("\n ")
           cat(paste("--->El nodo encontrado es: ", valor, sep = " "))
           cat("\n ")
-          dataIgraph<-grafica(extracciones,dataIgraph,TRUE)
+          dataIgraph<-grafica(extracciones,dataIgraph,TRUE,pausas)
         }
         cat("\n ")
         cat(paste("La extracción es: ", extracciones, sep = " "))
@@ -301,7 +334,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
             break
           }
           if (is.null(listNodosVisitados[[extracciones]])){
-            dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+            dataIgraph<-grafica(extracciones,dataIgraph,FALSE,pausas)
           }
           
         }
@@ -312,7 +345,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
         }
         
         
-        dataIgraph<-grafica(extracciones,dataIgraph,FALSE)
+        dataIgraph<-grafica(extracciones,dataIgraph,FALSE,pausas)
         if(nivelBusqd[[extracciones]]$nivel< nivelBusqueda){
           nodosAdyacentes <- getNodoAristas(extracciones)$adyacentes
           for (nodo in nodosAdyacentes) {
@@ -329,16 +362,26 @@ grafoGene <- setRefClass("Grafo", fields = list(
       if (length(listNodosBuscar) != 0 & !is.null(listNodosBuscar)) {
         if (listNodosBuscar[[1]]!=""){
           cat("\n ")
-          cat("No se ha encontrado todos los nodos")
+          message("No se ha encontrado todos los nodos en el profundidad iterativa")
+          cat("\n ")
         }
         
       }
+      
+      tiempo<-proc.time() - t
+      
+      complejidad=as.character(maxHijos^profundidadGrafo)
+      return(data.frame("Algoritmo"=c("Profundidad iterativa"),"Temporal"=c(complejidad),"Espacial"=c(as.character(maxHijos)),"Tiempo computacional"=c(tiempo[["elapsed"]]),"Tipo"=c("Ciegas")))
+
     },
     
     #Algoritmo para la busqueda en costo uniforme
-    busquedaCostoUniforme = function(nodoInicio, listNodosBuscar,dataIgraph) {
+    busquedaCostoUniforme = function(nodoInicio, listNodosBuscar,dataIgraph,pausas) {
       #Se ingresa una lista para buscar todos los elementos de la lista dada
       #El nodo inicio es de tipo character
+      t <- proc.time()
+      maxHijos<-max(degree(dataIgraph,mode="out"))
+      profundidadGrafo <- max(distances(dataIgraph, nodoInicio))
       if (length(listNodosBuscar)==0){
         listNodosBuscar[[1]]<-""
       }
@@ -363,7 +406,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("\n ")
           cat(paste("--->El nodo encontrado es: ", valor, sep = " "))
           cat("\n ")
-          dataIgraph<-grafica(extracciones$nodo,dataIgraph,TRUE)
+          dataIgraph<-grafica(extracciones$nodo,dataIgraph,TRUE,pausas)
         }
         cat("\n ")
         cat(paste("La extracción es:", extracciones$nodo,"con el costo de:",extracciones$costo, sep = " "))
@@ -394,7 +437,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
             break
           }
           if (is.null(listNodosVisitados[[extracciones$nodo]])){
-            dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+            dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE,pausas)
           }
           
         }
@@ -402,7 +445,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
         if (is.null(extracciones)) {
           break
         }
-        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE,pausas)
         
         nodosAdyacentes <- getNodoAristas(extracciones$nodo)$adyacentes
         numExtracciones<-as.numeric(extracciones$peso)
@@ -416,16 +459,27 @@ grafoGene <- setRefClass("Grafo", fields = list(
       if (length(listNodosBuscar) != 0 & !is.null(listNodosBuscar)) {
         if (listNodosBuscar[[1]]!=""){
           cat("\n ")
-          cat("No se ha encontrado todos los nodos")
+          message("No se ha encontrado todos los nodos en la busqueda costo uniforme")
+          cat("\n ")
         }
         
       }
+      
+      tiempo<-proc.time() - t
+      complejidad=as.character(maxHijos^profundidadGrafo)
+      return(data.frame("Algoritmo"=c("Costo uniforme"),"Temporal"=c(complejidad),"Espacial"=c(complejidad),"Tiempo computacional"=c(tiempo[["elapsed"]]),"Tipo"=c("Ciegas")))
     },
     
     #*************Algortimos Heuristicos****************
-    metodoGradiente = function(nodoInicio, listNodosBuscar,dataIgraph) {
+    metodoGradiente = function(nodoInicio, listNodosBuscar,dataIgraph,pausas) {
       #Se ingresa una lista para buscar todos los elementos de la lista dada
       #El nodo inicio es de tipo character
+      t <- proc.time()
+      grados<-degree(dataIgraph,mode="out")
+      numNodos<-length(grados)
+      profundidadGrafo <- max(distances(dataIgraph, nodoInicio))
+      
+      
       if (length(listNodosBuscar)==0){
         listNodosBuscar[[1]]<-""
       }
@@ -450,7 +504,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("\n ")
           cat(paste("--->El nodo encontrado es: ", valor, sep = " "))
           cat("\n ")
-          dataIgraph<-grafica(extracciones$nodo,dataIgraph,TRUE)
+          dataIgraph<-grafica(extracciones$nodo,dataIgraph,TRUE,pausas)
         }
         cat("\n ")
         cat(paste("La extracción es:", extracciones$nodo,"con la heuristica de:",extracciones$heuristica, sep = " "))
@@ -482,7 +536,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
             break
           }
           if (is.null(listNodosVisitados[[extracciones$nodo]])){
-            dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+            dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE,pausas)
           }
           
         }
@@ -490,7 +544,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
         if (is.null(extracciones)) {
           break
         }
-        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE,pausas)
         
         nodosAdyacentes <- getNodoAristas(extracciones$nodo)$adyacentes
         
@@ -504,16 +558,28 @@ grafoGene <- setRefClass("Grafo", fields = list(
       if (length(listNodosBuscar) != 0 & !is.null(listNodosBuscar)) {
         if (listNodosBuscar[[1]]!=""){
           cat("\n ")
-          cat("No se ha encontrado todos los nodos")
+          message("No se ha encontrado todos los nodos en el gradiente")
+          cat("\n ")
         }
         
       }
+      
+      tiempo<-proc.time() - t
+      return(data.frame("Algoritmo"=c("Gradiente"),"Temporal"=c(paste("Mejor:",round(log(numNodos,10),2),"Peor:", profundidadGrafo,sep = " ")),"Espacial"=c(paste("Mejor:",1,"Peor:", profundidadGrafo,sep = " ")),"Tiempo computacional"=c(tiempo[["elapsed"]]),"Tipo"=c("Heuristico")))
+      
     },
     
     #Algoritmo primero el mejor
-    primeroMejor = function(nodoInicio, listNodosBuscar,dataIgraph) {
+    primeroMejor = function(nodoInicio, listNodosBuscar,dataIgraph,pausas) {
       #Se ingresa una lista para buscar todos los elementos de la lista dada
       #El nodo inicio es de tipo character
+      t <- proc.time()
+      grados<-degree(dataIgraph,mode="out")
+      numNodos<-length(grados)
+      profundidadGrafo <- max(distances(dataIgraph, nodoInicio))
+      hijosPromedio<-round(mean(grados[grados>0]), digits = 0)
+      
+      
       if (length(listNodosBuscar)==0){
         listNodosBuscar[[1]]<-""
       }
@@ -538,7 +604,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("\n ")
           cat(paste("--->El nodo encontrado es: ", valor, sep = " "))
           cat("\n ")
-          dataIgraph<-grafica(extracciones$nodo,dataIgraph,TRUE)
+          dataIgraph<-grafica(extracciones$nodo,dataIgraph,TRUE,pausas)
         }
         cat("\n ")
         cat(paste("La extracción es:", extracciones$nodo,"con la heuristica de:",extracciones$heuristica, sep = " "))
@@ -569,7 +635,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
             break
           }
           if (is.null(listNodosVisitados[[extracciones$nodo]])){
-            dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+            dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE,pausas)
           }
           
         }
@@ -577,7 +643,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
         if (is.null(extracciones)) {
           break
         }
-        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+        dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE,pausas)
         
         nodosAdyacentes <- getNodoAristas(extracciones$nodo)$adyacentes
         
@@ -591,16 +657,27 @@ grafoGene <- setRefClass("Grafo", fields = list(
       if (length(listNodosBuscar) != 0 & !is.null(listNodosBuscar)) {
         if (listNodosBuscar[[1]]!=""){
           cat("\n ")
-          print("Paso")
-          cat("No se ha encontrado todos los nodos")
+          message("No se ha encontrado todos los nodos en el primero el mejor")
+          cat("\n ")
         }
         
       }
+      
+      tiempo<-proc.time() - t
+      return(data.frame("Algoritmo"=c("Primero Mejor"),"Temporal"=c(paste("Mejor:",round(log(numNodos,10),2),"Peor:", round(hijosPromedio^profundidadGrafo,2),sep = " ")),"Espacial"=c(paste("Mejor:",1,"Peor:", round(hijosPromedio^profundidadGrafo,2),sep = " ")),"Tiempo computacional"=c(tiempo[["elapsed"]]),"Tipo"=c("Heuristico")))
+      
+      
     },
     
-    aEstrella = function(nodoInicio, listNodosBuscar,dataIgraph) {
+    aEstrella = function(nodoInicio, listNodosBuscar,dataIgraph,pausas) {
       #Se ingresa una lista para buscar todos los elementos de la lista dada
       #El nodo inicio es de tipo character
+      t <- proc.time()
+      grados<-degree(dataIgraph,mode="out")
+      profundidadGrafo <- max(distances(dataIgraph, nodoInicio))
+      hijosPromedio<-round(mean(grados[grados>0]), digits = 0)
+      profundidadMetaPromedio<-profudidadMeta(dataIgraph,listNodosBuscar,nodoInicio)
+      
       if (length(listNodosBuscar)==0){
         listNodosBuscar[[1]]<-""
       }
@@ -625,7 +702,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           cat("\n ")
           cat(paste("--->El nodo encontrado es: ", valor, sep = " "))
           cat("\n ")
-          dataIgraph<-grafica(extracciones$nodo,dataIgraph,TRUE)
+          dataIgraph<-grafica(extracciones$nodo,dataIgraph,TRUE,pausas)
         }
         cat("\n ")
         cat(paste("La extracción es:", extracciones$nodo,"con la suma de:",extracciones$suma, sep = " "))
@@ -655,7 +732,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
               break
             }
             if (is.null(listNodosVisitados[[extracciones$nodo]])){
-              dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+              dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE,pausas)
             }
           }
         
@@ -664,7 +741,7 @@ grafoGene <- setRefClass("Grafo", fields = list(
           break
         }
         
-          dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE)
+          dataIgraph<-grafica(extracciones$nodo,dataIgraph,FALSE,pausas)
         
         
         nodosAdyacentes <- getNodoAristas(extracciones$nodo)$adyacentes
@@ -684,14 +761,21 @@ grafoGene <- setRefClass("Grafo", fields = list(
       if (length(listNodosBuscar) != 0 & !is.null(listNodosBuscar)) {
         if (listNodosBuscar[[1]]!=""){
           cat("\n ")
-          cat("No se ha encontrado todos los nodos")
+          message("No se ha encontrado todos los nodos en el A*")
+          cat("\n ")
         }
       }
+      
+      tiempo<-proc.time() - t
+      return(data.frame("Algoritmo"=c("A*"),"Temporal"=c(paste("Mejor:",hijosPromedio^profundidadMetaPromedio,"Peor:", round(hijosPromedio^profundidadGrafo,2),sep = " ")),"Espacial"=c(paste("Mejor:",1,"Peor:", round(hijosPromedio^profundidadGrafo,2),sep = " ")),"Tiempo computacional"=c(tiempo[["elapsed"]]),"Tipo"=c("Heuristico")))
+      
     }
   )
 )
 
-grafo <- grafoGene(nombreArchivo = "grafo1.csv")
-datosIgraph<-grafo$initGrafo(FALSE,FALSE)
-V(datosIgraph)$color <- "yellow"
-grafo$primeroMejor("s",list("z","a"),datosIgraph)
+# grafo <- grafoGene(nombreArchivo = "prueba.csv")
+# datosIgraph<-grafo$initGrafo(FALSE,TRUE)
+# V(datosIgraph)$color <- "yellow"
+# print(grafo$busquedaProfundidadIterativa("A",list("I","J"),100,datosIgraph,TRUE))
+
+
