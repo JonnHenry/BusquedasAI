@@ -32,7 +32,11 @@ maxHijos<-max(degree(dataIgraph,mode="out"))
 grados<-degree(dataIgraph,mode="out")
 hijosPromedio<-round(mean(grados[grados>0]), digits = 0)
 
+t <- proc.time()
+
 tiempo<-proc.time() - t
+
+print(tiempo)
 
 print(tiempo[["elapsed"]])
 
