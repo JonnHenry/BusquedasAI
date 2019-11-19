@@ -198,7 +198,7 @@ while(TRUE){
                  listNodosBuscar[[nodo]]<-nodo
                  cont<-cont+1
                }else{
-                 message("El nodo no se encuentra en el grafo")
+                 message("El nodo no se encuentra en el grafo y el algoritmo bidireccional no funcionaria bien!")
                }
              }
              
@@ -403,7 +403,7 @@ while(TRUE){
                    listNodosBuscar[[nodo]]<-nodo
                    cont<-cont+1
                  }else{
-                   message("El nodo no se encuentra en el grafo")
+                   message("El nodo no se encuentra en el grafo y el algoritmo bidireccional no funcionaria bien!")
                  }
                }
                
