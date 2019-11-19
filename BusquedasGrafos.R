@@ -676,7 +676,14 @@ grafoGene <- setRefClass("Grafo", fields = list(
       grados<-degree(dataIgraph,mode="out")
       profundidadGrafo <- max(distances(dataIgraph, nodoInicio))
       hijosPromedio<-round(mean(grados[grados>0]), digits = 0)
-      profundidadMetaPromedio<-profudidadMeta(dataIgraph,listNodosBuscar,nodoInicio)
+      listAux<-list()
+      for (l in listNodosBuscar){
+        if (!is.null(listNombreNodos[[l]])){
+          listAux[[l]]<-l 
+        }
+      }
+      
+      profundidadMetaPromedio<-profudidadMeta(dataIgraph,listAux,nodoInicio)
       
       if (length(listNodosBuscar)==0){
         listNodosBuscar[[1]]<-""

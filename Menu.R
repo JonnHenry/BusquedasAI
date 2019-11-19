@@ -113,12 +113,8 @@ while(TRUE){
              cont<-0
              while(cont<numNodos&!is.null(listNodos[[nodoInicial]])){
                nodo<-readCaracter(paste("Ingrese el nodo", cont+1,"a buscar:",sep = " "))
-               if (!is.null(listNodos[[nodo]])) {
-                 listNodosBuscar[[nodo]]<-nodo
-                 cont<-cont+1
-               }else{
-                 message("El nodo no se encuentra en el grafo")
-               }
+               listNodosBuscar[[nodo]]<-nodo
+               cont<-cont+1
              }
             
              resultados<-grafoDireccional$busquedaAmplitud(nodoInicial, listNodosBuscar,datosIgraphDireccional,TRUE)
@@ -152,12 +148,8 @@ while(TRUE){
              cont<-0
              while(cont<numNodos&!is.null(listNodos[[nodoInicial]])){
                nodo<-readCaracter(paste("Ingrese el nodo", cont+1,"a buscar:",sep = " "))
-               if (!is.null(listNodos[[nodo]])) {
-                 listNodosBuscar[[nodo]]<-nodo
-                 cont<-cont+1
-               }else{
-                 message("El nodo no se encuentra en el grafo")
-               }
+               listNodosBuscar[[nodo]]<-nodo
+               cont<-cont+1
              }
              
              resultados<-grafoDireccional$busquedaProfundidad(nodoInicial, listNodosBuscar,datosIgraphDireccional,TRUE)
@@ -240,12 +232,8 @@ while(TRUE){
              cont<-0
              while(cont<numNodos&!is.null(listNodos[[nodoInicial]])){
                nodo<-readCaracter(paste("Ingrese el nodo", cont+1,"a buscar:",sep = " "))
-               if (!is.null(listNodos[[nodo]])) {
-                 listNodosBuscar[[nodo]]<-nodo
-                 cont<-cont+1
-               }else{
-                 message("El nodo no se encuentra en el grafo")
-               }
+               listNodosBuscar[[nodo]]<-nodo
+               cont<-cont+1
              }
              
              resultados<-grafoDireccional$busquedaProfundidadIterativa(nodoInicial, listNodosBuscar,nivelBusqueda,datosIgraphDireccional,TRUE)
@@ -276,13 +264,9 @@ while(TRUE){
              numNodos<-readInteger("Ingrese el número de nodos a buscar:")
              cont<-0
              while(cont<numNodos&!is.null(listNodos[[nodoInicial]])){
-               nodo<-readCaracter(paste("Ingrese el nodo", cont+1,"a buscar:",sep = " "))
-               if (!is.null(listNodos[[nodo]])) {
+                nodo<-readCaracter(paste("Ingrese el nodo", cont+1,"a buscar:",sep = " "))
                  listNodosBuscar[[nodo]]<-nodo
                  cont<-cont+1
-               }else{
-                 message("El nodo no se encuentra en el grafo")
-               }
              }
              
              resultados<-grafoDireccional$busquedaCostoUniforme(nodoInicial, listNodosBuscar,datosIgraphDireccional,TRUE)
@@ -314,12 +298,8 @@ while(TRUE){
              cont<-0
              while(cont<numNodos&!is.null(listNodos[[nodoInicial]])){
                nodo<-readCaracter(paste("Ingrese el nodo", cont+1,"a buscar:",sep = " "))
-               if (!is.null(listNodos[[nodo]])) {
-                 listNodosBuscar[[nodo]]<-nodo
-                 cont<-cont+1
-               }else{
-                 message("El nodo no se encuentra en el grafo")
-               }
+               listNodosBuscar[[nodo]]<-nodo
+               cont<-cont+1
              }
              
              resultados<-grafoDireccional$metodoGradiente(nodoInicial, listNodosBuscar,datosIgraphDireccional,TRUE)
@@ -351,12 +331,8 @@ while(TRUE){
              cont<-0
              while(cont<numNodos&!is.null(listNodos[[nodoInicial]])){
                nodo<-readCaracter(paste("Ingrese el nodo", cont+1,"a buscar:",sep = " "))
-               if (!is.null(listNodos[[nodo]])) {
-                 listNodosBuscar[[nodo]]<-nodo
-                 cont<-cont+1
-               }else{
-                 message("El nodo no se encuentra en el grafo")
-               }
+               listNodosBuscar[[nodo]]<-nodo
+               cont<-cont+1
              }
              
              resultados<-grafoDireccional$primeroMejor(nodoInicial, listNodosBuscar,datosIgraphDireccional,TRUE)
@@ -388,12 +364,8 @@ while(TRUE){
              cont<-0
              while(cont<numNodos&!is.null(listNodos[[nodoInicial]])){
                nodo<-readCaracter(paste("Ingrese el nodo", cont+1,"a buscar:",sep = " "))
-               if (!is.null(listNodos[[nodo]])) {
-                 listNodosBuscar[[nodo]]<-nodo
-                 cont<-cont+1
-               }else{
-                 message("El nodo no se encuentra en el grafo")
-               }
+               listNodosBuscar[[nodo]]<-nodo
+               cont<-cont+1
              }
              
              resultados<-grafoDireccional$aEstrella(nodoInicial, listNodosBuscar,datosIgraphDireccional,TRUE)
@@ -424,6 +396,7 @@ while(TRUE){
              numNodos<-readInteger("Ingrese el número de nodos a buscar:")
              if (numNodos>=1){
                cont<-0
+               
                while(cont<numNodos&!is.null(listNodos[[nodoInicial]])){
                  nodo<-readCaracter(paste("Ingrese el nodo", cont+1,"a buscar:",sep = " "))
                  if (!is.null(listNodos[[nodo]])) {
